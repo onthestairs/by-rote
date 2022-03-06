@@ -84,7 +84,11 @@ const PlayPoem = ({ poem }: { poem: string }) => {
 
   const changeGuess = (guess: string) => {
     const upperGuess = guess.toUpperCase();
-    if (wordsInPoem.has(upperGuess) && !correctWords.has(upperGuess)) {
+    if (
+      wordsInPoem.has(upperGuess) &&
+      !correctWords.has(upperGuess) &&
+      !revealedWords.has(upperGuess)
+    ) {
       addCorrectWord(upperGuess);
       setGuess("");
     } else {
