@@ -7,7 +7,13 @@ import {
   useParams,
 } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { getPoemById, addPoemToStore, Poem, getPoemsFromStore } from "./store";
+import {
+  getPoemById,
+  addPoemToStore,
+  Poem,
+  getPoemsFromStore,
+  removePoemFromStore,
+} from "./store";
 
 const ByRoteWithRouter = () => {
   return (
@@ -52,7 +58,15 @@ const List = () => {
       <li>
         <Link to={`/learn/${poemId}`}>
           {poem.title} - {poem.author}
-        </Link>
+        </Link>{" "}
+        <a
+          href="#"
+          onClick={(_e) =>
+            window.confirm("Are you sure?") ? removePoemFromStore(poemId) : null
+          }
+        >
+          (Delete)
+        </a>
       </li>
     );
   });
@@ -64,27 +78,6 @@ const List = () => {
     </div>
   );
 };
-
-// const App = () => {
-//   const [poemId, setPoemId] = useState<string | null>(null);
-//   const poem = useMemo(
-//     () => (poemId === null ? null : getPoemById(poemId)),
-//     [poemId]
-//   );
-//
-//   if (poem === null) {
-//     return (
-//       <PoemForm
-//         onSubmit={(poem: Poem) => {
-//           const poemId = addPoemToStore(poem);
-//           setPoemId(poemId);
-//         }}
-//       />
-//     );
-//   } else {
-//     return <PlayPoem poem={poem} />;
-//   }
-// };
 
 const splitLines = (s: string): string[] => {
   return s.split("\n");
@@ -199,6 +192,11 @@ const PlayPoem = ({ poem }: { poem: Poem }) => {
     addRevealedWord(word);
   };
 
+  const reset = () => {
+    setCorrectWords(new Set());
+    setRevealedWords(new Set());
+  };
+
   return (
     <div>
       <div className="guesses">
@@ -207,7 +205,18 @@ const PlayPoem = ({ poem }: { poem: Poem }) => {
           value={guess}
           onChange={(e) => changeGuess(e.target.value)}
         />
-        <p>{revealedWords.size} cheats</p>
+        <p>
+          {revealedWords.size} cheats |{" "}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              reset();
+            }}
+          >
+            Reset
+          </a>
+        </p>
       </div>
       <MaskedPoem
         structuredPoem={structuredPoem}
