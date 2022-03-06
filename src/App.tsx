@@ -1,22 +1,90 @@
 import React, { useState, useMemo } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+import { Link } from "react-router-dom";
+import { getPoemById, addPoemToStore, Poem, getPoemsFromStore } from "./store";
+
+const ByRoteWithRouter = () => {
+  return (
+    <BrowserRouter>
+      <ByRote />
+    </BrowserRouter>
+  );
+};
 
 const ByRote = () => {
+  let navigate = useNavigate();
   return (
     <div className="mainBody">
-      <h1>By rote</h1>
-      <App></App>
+      <Link to="/">
+        <h1>By rote</h1>
+      </Link>
+
+      <Routes>
+        <Route path="/" element={<List />} />
+        <Route
+          path="/add"
+          element={
+            <PoemForm
+              onSubmit={(poem: Poem) => {
+                const poemId = addPoemToStore(poem);
+                navigate(`/learn/${poemId}`);
+              }}
+            />
+          }
+        />
+        <Route path="/learn/:poemId" element={<PlayPoemWrapper />} />
+      </Routes>
     </div>
   );
 };
 
-const App = () => {
-  const [poem, setPoem] = useState<string | null>(null);
-  if (poem === null) {
-    return <PoemForm onSubmit={(poem: string) => setPoem(poem)} />;
-  } else {
-    return <PlayPoem poem={poem} />;
-  }
+const List = () => {
+  const poems = getPoemsFromStore();
+  const poemLinks = Object.keys(poems).map((poemId) => {
+    const poem = poems[poemId];
+    return (
+      <li>
+        <Link to={`/learn/${poemId}`}>
+          {poem.title} - {poem.author}
+        </Link>
+      </li>
+    );
+  });
+
+  return (
+    <div>
+      <ul>{poemLinks}</ul>
+      <Link to="/add">Add</Link>
+    </div>
+  );
 };
+
+// const App = () => {
+//   const [poemId, setPoemId] = useState<string | null>(null);
+//   const poem = useMemo(
+//     () => (poemId === null ? null : getPoemById(poemId)),
+//     [poemId]
+//   );
+//
+//   if (poem === null) {
+//     return (
+//       <PoemForm
+//         onSubmit={(poem: Poem) => {
+//           const poemId = addPoemToStore(poem);
+//           setPoemId(poemId);
+//         }}
+//       />
+//     );
+//   } else {
+//     return <PlayPoem poem={poem} />;
+//   }
+// };
 
 const splitLines = (s: string): string[] => {
   return s.split("\n");
@@ -39,11 +107,23 @@ const extractWords = (poem: string): Set<String> => {
   return new Set(words);
 };
 
-const PoemForm = ({ onSubmit }: { onSubmit: (poem: string) => void }) => {
+const PoemForm = ({ onSubmit }: { onSubmit: (poem: Poem) => void }) => {
   const [poemText, setPoemText] = useState<string>("");
+  const [title, setTitle] = useState<string>("");
+  const [author, setAuthor] = useState<string>("");
   return (
     <div>
       <p>Enter the text of the poem to learn</p>
+      <input
+        value={title}
+        placeholder={"Title"}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+      <input
+        value={author}
+        placeholder={"Author"}
+        onChange={(e) => setAuthor(e.target.value)}
+      />
       <textarea
         className="poemInput"
         value={poemText}
@@ -52,8 +132,14 @@ const PoemForm = ({ onSubmit }: { onSubmit: (poem: string) => void }) => {
       <br />
       <input
         type="submit"
-        onClick={(_e) => onSubmit(poemText.trim())}
-        value={"Go!"}
+        onClick={(_e) =>
+          onSubmit({
+            title: title.trim(),
+            author: author.trim(),
+            text: poemText.trim(),
+          })
+        }
+        value={"Add"}
       />
     </div>
   );
@@ -63,9 +149,22 @@ const extractActualWord = (word: string) => {
   return word.replace(/([^a-zA-Z'-]|(-$))/g, "");
 };
 
-const PlayPoem = ({ poem }: { poem: string }) => {
-  const structuredPoem = useMemo(() => makeStructuredPoem(poem), [poem]);
-  const wordsInPoem = useMemo(() => extractWords(poem), [poem]);
+const PlayPoemWrapper = ({}) => {
+  let params = useParams();
+  const poemId = params.poemId;
+  if (poemId === null || poemId === undefined) {
+    return <p>No poem</p>;
+  }
+  const poem = getPoemById(poemId);
+  return <PlayPoem poem={poem} />;
+};
+
+const PlayPoem = ({ poem }: { poem: Poem }) => {
+  const structuredPoem = useMemo(
+    () => makeStructuredPoem(poem.text),
+    [poem.text]
+  );
+  const wordsInPoem = useMemo(() => extractWords(poem.text), [poem.text]);
   const [correctWords, setCorrectWords] = useState<Set<string>>(new Set());
   const [revealedWords, setRevealedWords] = useState<Set<string>>(new Set());
   const [guess, setGuess] = useState("");
@@ -99,8 +198,6 @@ const PlayPoem = ({ poem }: { poem: string }) => {
   const revealWord = (word: string) => {
     addRevealedWord(word);
   };
-
-  console.log(revealedWords);
 
   return (
     <div>
@@ -186,4 +283,4 @@ const MaskedWord = ({
   );
 };
 
-export default ByRote;
+export default ByRoteWithRouter;

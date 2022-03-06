@@ -4,7 +4,7 @@ let
 in
 pkgs.mkShell {
   buildInputs = [
-    pkgs.nodejs-16_x
+    pkgs.nodejs-17_x
     pkgs.yarn
     pkgs.python37
     pkgs.darwin.apple_sdk.frameworks.CoreServices
