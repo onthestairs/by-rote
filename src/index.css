@@ -1,0 +1,24 @@
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+th {
+  text-align: left;
+}
+
+h1 {
+	font-style: italic;
+	text-align: center;
+	text-decoration: underline;
+
+}
+
+nav {
+	text-align: center;
+}
