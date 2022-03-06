@@ -142,7 +142,7 @@ const extractActualWord = (word: string) => {
   return word.replace(/([^a-zA-Z'-]|(-$))/g, "");
 };
 
-const PlayPoemWrapper = ({}) => {
+const PlayPoemWrapper = () => {
   let params = useParams();
   const poemId = params.poemId;
   if (poemId === null || poemId === undefined) {
