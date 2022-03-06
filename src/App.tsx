@@ -177,7 +177,7 @@ const MaskedWord = ({
     <span
       onClick={(e) => {
         e.preventDefault();
-        onReveal(word);
+        onReveal(extractActualWord(word));
       }}
       className="maskedWord"
     >
