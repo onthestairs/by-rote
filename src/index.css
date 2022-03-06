@@ -4,21 +4,52 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-*, *:before, *:after {
+*,
+*:before,
+*:after {
   box-sizing: border-box;
 }
 
-th {
-  text-align: left;
+.mainBody {
+  width: 800px;
+  margin: 0 auto;
 }
 
 h1 {
-	font-style: italic;
-	text-align: center;
-	text-decoration: underline;
-
+  font-style: italic;
+  text-decoration: underline;
 }
 
-nav {
-	text-align: center;
+.poemInput {
+  width: 100%;
+  height: 400px;
+}
+
+.wordGuess {
+  font-size: 2em;
+  width: 80%;
+  margin: 0 auto;
+  margin-bottom: 0.2em;
+}
+
+.guesses {
+  margin-bottom: 2em;
+}
+
+.maskedWord {
+  cursor: pointer;
+  border: 1px solid white;
+}
+
+.maskedWord:hover {
+  border: 1px solid blue;
+}
+
+.shownWord.revealed {
+  color: red;
+}
+
+.maskedPoem {
+  font-size: 1.4em;
+  line-height: 1.3;
 }
