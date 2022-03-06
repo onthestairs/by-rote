@@ -170,7 +170,13 @@ const MaskedWord = ({
   onReveal: (word: string) => void;
 }) => {
   return (
-    <span onClick={(_e) => onReveal(word)} className="maskedWord">
+    <span
+      onClick={(e) => {
+        e.preventDefault();
+        onReveal(word);
+      }}
+      className="maskedWord"
+    >
       ------
     </span>
   );
