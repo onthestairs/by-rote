@@ -60,7 +60,7 @@ const List = () => {
           {poem.title} - {poem.author}
         </Link>{" "}
         <a
-          href="#"
+          href="/"
           onClick={(_e) =>
             window.confirm("Are you sure?") ? removePoemFromStore(poemId) : null
           }
@@ -208,7 +208,7 @@ const PlayPoem = ({ poem }: { poem: Poem }) => {
         <p>
           {revealedWords.size} cheats |{" "}
           <a
-            href="#"
+            href="/"
             onClick={(e) => {
               e.preventDefault();
               reset();
