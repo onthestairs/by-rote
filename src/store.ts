@@ -4,6 +4,9 @@ export type Poem = { title: string; author: string; text: string };
 interface PoemMap {
   [key: string]: Poem;
 }
+interface PoemScoreMap {
+  [key: string]: number[];
+}
 
 export const addPoemToStore = (poem: Poem): string => {
   const poems = getPoemsFromStore();
@@ -37,4 +40,36 @@ export const getPoemsFromStore = (): PoemMap => {
   const poemsString = localStorage.getItem("poems");
   if (poemsString === null) return {};
   return JSON.parse(poemsString);
+};
+
+const getScores = (): PoemScoreMap => {
+  const scoresString = localStorage.getItem("scores");
+  if (scoresString === null) return {};
+  return JSON.parse(scoresString);
+};
+
+const setScores = (poemScores: PoemScoreMap) => {
+  const poemScoresString = JSON.stringify(poemScores);
+  localStorage.setItem("scores", poemScoresString);
+};
+
+export const getPoemScores = (id: string): number[] => {
+  const poemScores = getScores();
+  const scores = poemScores[id];
+  if (scores === undefined) {
+    return [];
+  } else {
+    return scores;
+  }
+};
+
+export const registerScore = (id: string, score: number) => {
+  const poemScores = getScores();
+  const scores = poemScores[id];
+  if (scores === undefined) {
+    poemScores[id] = [score];
+  } else {
+    poemScores[id] = [...scores, score];
+  }
+  setScores(poemScores);
 };

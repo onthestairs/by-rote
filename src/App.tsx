@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   BrowserRouter,
   Routes,
@@ -13,6 +13,8 @@ import {
   Poem,
   getPoemsFromStore,
   removePoemFromStore,
+  registerScore,
+  getPoemScores,
 } from "./store";
 
 const ByRoteWithRouter = () => {
@@ -57,7 +59,7 @@ const List = () => {
     return (
       <li>
         <Link to={`/learn/${poemId}`}>
-          {poem.title} - {poem.author}
+          {poem.title}, {poem.author}
         </Link>{" "}
         <a
           href="/"
@@ -91,10 +93,12 @@ const makeStructuredPoem = (poem: string): string[][] => {
   return splitLines(poem).map((line) => splitWords(line));
 };
 
-const extractWords = (poem: string): Set<String> => {
+const extractWords = (poem: string): Set<string> => {
   let words = splitLines(poem)
     .map((line) =>
-      splitWords(line).map((word) => extractActualWord(word).toUpperCase())
+      splitWords(line.trim()).map((word) =>
+        extractActualWord(word).toUpperCase()
+      )
     )
     .flat();
   return new Set(words);
@@ -149,10 +153,10 @@ const PlayPoemWrapper = () => {
     return <p>No poem</p>;
   }
   const poem = getPoemById(poemId);
-  return <PlayPoem poem={poem} />;
+  return <PlayPoem poem={poem} poemId={poemId} />;
 };
 
-const PlayPoem = ({ poem }: { poem: Poem }) => {
+const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
   const structuredPoem = useMemo(
     () => makeStructuredPoem(poem.text),
     [poem.text]
@@ -160,6 +164,17 @@ const PlayPoem = ({ poem }: { poem: Poem }) => {
   const wordsInPoem = useMemo(() => extractWords(poem.text), [poem.text]);
   const [correctWords, setCorrectWords] = useState<Set<string>>(new Set());
   const [revealedWords, setRevealedWords] = useState<Set<string>>(new Set());
+  const isCompleted: boolean = useMemo(() => {
+    return Array.from(wordsInPoem).every((value, _index, _array): boolean => {
+      return correctWords.has(value) || revealedWords.has(value);
+    });
+  }, [correctWords, wordsInPoem, revealedWords]);
+  useEffect(() => {
+    if (isCompleted) {
+      const score = revealedWords.size;
+      registerScore(poemId, score);
+    }
+  }, [poemId, revealedWords, isCompleted]);
   const [guess, setGuess] = useState("");
 
   const addCorrectWord = (word: string) => {
@@ -197,6 +212,19 @@ const PlayPoem = ({ poem }: { poem: Poem }) => {
     setRevealedWords(new Set());
   };
 
+  const scores = getPoemScores(poemId);
+  let scoreStr;
+  if (scores.length === 0) {
+    scoreStr = "No completions";
+  } else {
+    let perfectScores = scores.filter((score: number) => score === 0).length;
+    if (perfectScores > 0) {
+      scoreStr = `${perfectScores} perfect scores`;
+    } else {
+      const bestScore = Math.min(...scores);
+      scoreStr = `Best score: ${bestScore}`;
+    }
+  }
   return (
     <div>
       <div className="guesses">
@@ -206,7 +234,9 @@ const PlayPoem = ({ poem }: { poem: Poem }) => {
           onChange={(e) => changeGuess(e.target.value)}
         />
         <p>
-          {revealedWords.size} cheats |{" "}
+          {revealedWords.size} cheats{" | "}
+          {scoreStr}
+          {" | "}
           <a
             href="/"
             onClick={(e) => {
@@ -219,6 +249,8 @@ const PlayPoem = ({ poem }: { poem: Poem }) => {
         </p>
       </div>
       <MaskedPoem
+        isCompleted={isCompleted}
+        poem={poem}
         structuredPoem={structuredPoem}
         visibleWords={correctWords}
         revealedWords={revealedWords}
@@ -233,17 +265,25 @@ const intersperse = <A,>(xs: A[], a: A): A[] => {
 };
 
 const MaskedPoem = ({
+  poem,
   structuredPoem,
+  isCompleted,
   visibleWords,
   revealedWords,
   revealWord,
 }: {
+  poem: Poem;
+
   structuredPoem: string[][];
+  isCompleted: boolean;
   visibleWords: Set<string>;
   revealedWords: Set<string>;
   revealWord: (word: string) => void;
 }) => {
   const lines = structuredPoem.map((line, i) => {
+    if (line.length === 1 && line[0] === "") {
+      return <br key={i} />;
+    }
     const words = line.map((word, j) => {
       const actualWord = extractActualWord(word).toUpperCase();
       const isVisible = visibleWords.has(actualWord);
@@ -263,7 +303,15 @@ const MaskedPoem = ({
 
     return <div key={i}>{intersperse(words, <span> </span>)}</div>;
   });
-  return <div className="maskedPoem"> {lines}</div>;
+  return (
+    <div className={`maskedPoem ${isCompleted ? "completed" : ""}`}>
+      <div className="poemTitle">
+        <h2>{poem.title}</h2>
+        <p>{poem.author}</p>
+      </div>
+      {lines}
+    </div>
+  );
 };
 
 const ShownWord = ({ word, revealed }: { word: string; revealed: boolean }) => {
@@ -287,7 +335,7 @@ const MaskedWord = ({
       }}
       className="maskedWord"
     >
-      ------
+      -----
     </span>
   );
 };
