@@ -47,6 +47,7 @@ const ByRote = () => {
           }
         />
         <Route path="/learn/:poemId" element={<PlayPoemWrapper />} />
+        <Route path="/learn/:poemId/hard" element={<PlayPoemHardWrapper />} />
       </Routes>
     </div>
   );
@@ -256,6 +257,181 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
         revealedWords={revealedWords}
         revealWord={revealWord}
       ></MaskedPoem>
+    </div>
+  );
+};
+
+const PlayPoemHardWrapper = () => {
+  let params = useParams();
+  const poemId = params.poemId;
+  if (poemId === null || poemId === undefined) {
+    return <p>No poem</p>;
+  }
+  const poem = getPoemById(poemId);
+  return <PlayPoemHard poem={poem} poemId={poemId} />;
+};
+
+const isWhiteSpace = (s: string): boolean => {
+  return /\s/g.test(s) || s === "";
+};
+
+const splitStructuredPoem = (
+  structuredPoem: string[][],
+  stopIndex: number
+): [string[][], string | null] => {
+  let index = 0;
+  let truncatedStructuredPoem: string[][] = [];
+  for (let i = 0; i < structuredPoem.length; i++) {
+    const line = structuredPoem[i];
+    let lineWords: string[] = [];
+    for (let j = 0; j < line.length; j++) {
+      const word = line[j];
+      const isWordWhiteSpace = isWhiteSpace(word);
+      if (index === stopIndex && !isWordWhiteSpace) {
+        truncatedStructuredPoem = [...truncatedStructuredPoem, lineWords];
+        return [truncatedStructuredPoem, extractActualWord(word)];
+      }
+      lineWords = [...lineWords, word];
+      if (!isWordWhiteSpace) {
+        index += 1;
+      }
+    }
+    truncatedStructuredPoem = [...truncatedStructuredPoem, lineWords];
+  }
+  return [truncatedStructuredPoem, null];
+};
+
+const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
+  const structuredPoem = useMemo(
+    () => makeStructuredPoem(poem.text),
+    [poem.text]
+  );
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [truncatedStructuredPoem, expectedWord] = useMemo(() => {
+    return splitStructuredPoem(structuredPoem, currentIndex);
+  }, [structuredPoem, currentIndex]);
+  const [cheatIndexes, setCheatIndexes] = useState<number[]>([]);
+  const isCompleted = expectedWord === null;
+  useEffect(() => {
+    if (isCompleted) {
+      console.log("won!");
+    }
+  }, [poemId, cheatIndexes, isCompleted]);
+  const [guess, setGuess] = useState("");
+
+  const revealNextWord = () => {
+    setCheatIndexes([...cheatIndexes, currentIndex]);
+    setCurrentIndex(currentIndex + 1);
+  };
+
+  const changeGuess = (guess: string) => {
+    const upperGuess = guess.toUpperCase();
+    if (upperGuess === expectedWord?.toUpperCase()) {
+      setCurrentIndex(currentIndex + 1);
+      setGuess("");
+    } else {
+      setGuess(guess);
+    }
+  };
+
+  const reset = () => {
+    setCheatIndexes([]);
+    setCurrentIndex(0);
+  };
+
+  const scores = getPoemScores(poemId);
+  let scoreStr;
+  if (scores.length === 0) {
+    scoreStr = "No completions";
+  } else {
+    let perfectScores = scores.filter((score: number) => score === 0).length;
+    if (perfectScores > 0) {
+      scoreStr = `${perfectScores} perfect scores`;
+    } else {
+      const bestScore = Math.min(...scores);
+      scoreStr = `Best score: ${bestScore}`;
+    }
+  }
+  return (
+    <div>
+      <div className="guesses">
+        <input
+          className="wordGuess"
+          value={guess}
+          onChange={(e) => changeGuess(e.target.value)}
+        />
+        <p>
+          {cheatIndexes.length} cheats{" | "}
+          {scoreStr}
+          {" | "}
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              reset();
+            }}
+          >
+            Reset
+          </a>
+        </p>
+      </div>
+      <TruncatedPoem
+        poem={poem}
+        isCompleted={isCompleted}
+        cheatIndexes={cheatIndexes}
+        truncatedStructuredPoem={truncatedStructuredPoem}
+        revealNextWord={revealNextWord}
+      ></TruncatedPoem>
+    </div>
+  );
+};
+
+const TruncatedPoem = ({
+  poem,
+  truncatedStructuredPoem,
+  cheatIndexes,
+  isCompleted,
+  revealNextWord,
+}: {
+  poem: Poem;
+  truncatedStructuredPoem: string[][];
+  cheatIndexes: number[];
+  isCompleted: boolean;
+  revealNextWord: () => void;
+}) => {
+  const numberOfLines = truncatedStructuredPoem.length;
+  let index = 0;
+  const lines = truncatedStructuredPoem.map((line, i) => {
+    if (line.length === 1 && line[0] === "") {
+      return <br key={i} />;
+    }
+    let words = line.map((word, j) => {
+      const wordEl = (
+        <ShownWord
+          key={j}
+          word={word}
+          revealed={cheatIndexes.includes(index)}
+        />
+      );
+      if (!isWhiteSpace(word)) {
+        index += 1;
+      }
+      return wordEl;
+    });
+    if (i === numberOfLines - 1 && !isCompleted) {
+      const maskedWord = <MaskedWord word={""} onReveal={revealNextWord} />;
+      words = [...words, maskedWord];
+    }
+
+    return <div key={i}>{intersperse(words, <span> </span>)}</div>;
+  });
+  return (
+    <div className={`maskedPoem ${isCompleted ? "completed" : ""}`}>
+      <div className="poemTitle">
+        <h2>{poem.title}</h2>
+        <p>{poem.author}</p>
+      </div>
+      {lines}
     </div>
   );
 };
