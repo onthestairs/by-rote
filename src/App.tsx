@@ -15,6 +15,8 @@ import {
   removePoemFromStore,
   registerScore,
   getPoemScores,
+  registerHardScore,
+  getPoemHardScores,
 } from "./store";
 
 const ByRoteWithRouter = () => {
@@ -46,7 +48,7 @@ const ByRote = () => {
             />
           }
         />
-        <Route path="/learn/:poemId" element={<PlayPoemWrapper />} />
+        <Route path="/learn/:poemId/easy" element={<PlayPoemWrapper />} />
         <Route path="/learn/:poemId/hard" element={<PlayPoemHardWrapper />} />
       </Routes>
     </div>
@@ -59,16 +61,19 @@ const List = () => {
     const poem = poems[poemId];
     return (
       <li>
-        <Link to={`/learn/${poemId}`}>
-          {poem.title}, {poem.author}
-        </Link>{" "}
+        {poem.title}, {poem.author}
+        <br />
+        <Link to={`/learn/${poemId}/easy`}>Easy</Link>
+        {" ~ "}
+        <Link to={`/learn/${poemId}/hard`}>Hard</Link>
+        {" ~ "}
         <a
           href="/"
           onClick={(_e) =>
             window.confirm("Are you sure?") ? removePoemFromStore(poemId) : null
           }
         >
-          (Delete)
+          Delete
         </a>
       </li>
     );
@@ -314,7 +319,7 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
   const isCompleted = expectedWord === null;
   useEffect(() => {
     if (isCompleted) {
-      console.log("won!");
+      registerHardScore(poemId, cheatIndexes.length);
     }
   }, [poemId, cheatIndexes, isCompleted]);
   const [guess, setGuess] = useState("");
@@ -339,7 +344,7 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
     setCurrentIndex(0);
   };
 
-  const scores = getPoemScores(poemId);
+  const scores = getPoemHardScores(poemId);
   let scoreStr;
   if (scores.length === 0) {
     scoreStr = "No completions";

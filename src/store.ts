@@ -42,13 +42,13 @@ export const getPoemsFromStore = (): PoemMap => {
   return JSON.parse(poemsString);
 };
 
-const getScores = (): PoemScoreMap => {
-  const scoresString = localStorage.getItem("scores");
+const getHardScores = (): PoemScoreMap => {
+  const scoresString = localStorage.getItem("hardScores");
   if (scoresString === null) return {};
   return JSON.parse(scoresString);
 };
 
-const setScores = (poemScores: PoemScoreMap) => {
+const setHardScores = (poemScores: PoemScoreMap) => {
   const poemScoresString = JSON.stringify(poemScores);
   localStorage.setItem("scores", poemScoresString);
 };
@@ -72,4 +72,36 @@ export const registerScore = (id: string, score: number) => {
     poemScores[id] = [...scores, score];
   }
   setScores(poemScores);
+};
+
+const getScores = (): PoemScoreMap => {
+  const scoresString = localStorage.getItem("hardScores");
+  if (scoresString === null) return {};
+  return JSON.parse(scoresString);
+};
+
+const setScores = (poemScores: PoemScoreMap) => {
+  const poemScoresString = JSON.stringify(poemScores);
+  localStorage.setItem("scores", poemScoresString);
+};
+
+export const getPoemHardScores = (id: string): number[] => {
+  const poemScores = getHardScores();
+  const scores = poemScores[id];
+  if (scores === undefined) {
+    return [];
+  } else {
+    return scores;
+  }
+};
+
+export const registerHardScore = (id: string, score: number) => {
+  const poemScores = getHardScores();
+  const scores = poemScores[id];
+  if (scores === undefined) {
+    poemScores[id] = [score];
+  } else {
+    poemScores[id] = [...scores, score];
+  }
+  setHardScores(poemScores);
 };
