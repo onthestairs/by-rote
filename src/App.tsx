@@ -31,9 +31,11 @@ const ByRote = () => {
   let navigate = useNavigate();
   return (
     <div className="mainBody">
-      <Link to="/">
-        <h1>By rote</h1>
-      </Link>
+      <header className="header">
+        <Link to="/">
+          <h1>By rote</h1>
+        </Link>
+      </header>
 
       <Routes>
         <Route path="/" element={<List />} />
@@ -69,9 +71,12 @@ const List = () => {
         {" ~ "}
         <a
           href="/"
-          onClick={(_e) =>
-            window.confirm("Are you sure?") ? removePoemFromStore(poemId) : null
-          }
+          onClick={(e) => {
+            e.preventDefault();
+            return window.confirm("Are you sure?")
+              ? removePoemFromStore(poemId)
+              : null;
+          }}
         >
           Delete
         </a>
@@ -81,8 +86,12 @@ const List = () => {
 
   return (
     <div>
-      <ul>{poemLinks}</ul>
-      <Link to="/add">Add</Link>
+      <ul>
+        {poemLinks}
+        <li>
+          <Link to="/add">Add</Link>
+        </li>
+      </ul>
     </div>
   );
 };
@@ -115,21 +124,24 @@ const PoemForm = ({ onSubmit }: { onSubmit: (poem: Poem) => void }) => {
   const [title, setTitle] = useState<string>("");
   const [author, setAuthor] = useState<string>("");
   return (
-    <div>
+    <div className="addPoem">
       <p>Enter the text of the poem to learn</p>
       <input
         value={title}
         placeholder={"Title"}
         onChange={(e) => setTitle(e.target.value)}
       />
+      <br />
       <input
         value={author}
         placeholder={"Author"}
         onChange={(e) => setAuthor(e.target.value)}
       />
+      <br />
       <textarea
         className="poemInput"
         value={poemText}
+        placeholder="Poem text"
         onChange={(e) => setPoemText(e.target.value)}
       ></textarea>{" "}
       <br />
@@ -232,7 +244,7 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
     }
   }
   return (
-    <div>
+    <div className="learnPoem">
       <div className="guesses">
         <input
           className="wordGuess"
@@ -254,14 +266,16 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
           </a>
         </p>
       </div>
-      <MaskedPoem
-        isCompleted={isCompleted}
-        poem={poem}
-        structuredPoem={structuredPoem}
-        visibleWords={correctWords}
-        revealedWords={revealedWords}
-        revealWord={revealWord}
-      ></MaskedPoem>
+      <div className="poem">
+        <MaskedPoem
+          isCompleted={isCompleted}
+          poem={poem}
+          structuredPoem={structuredPoem}
+          visibleWords={correctWords}
+          revealedWords={revealedWords}
+          revealWord={revealWord}
+        ></MaskedPoem>
+      </div>
     </div>
   );
 };
@@ -358,7 +372,7 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
     }
   }
   return (
-    <div>
+    <div className="learnPoem">
       <div className="guesses">
         <input
           className="wordGuess"
@@ -380,13 +394,15 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
           </a>
         </p>
       </div>
-      <TruncatedPoem
-        poem={poem}
-        isCompleted={isCompleted}
-        cheatIndexes={cheatIndexes}
-        truncatedStructuredPoem={truncatedStructuredPoem}
-        revealNextWord={revealNextWord}
-      ></TruncatedPoem>
+      <div className="poem">
+        <TruncatedPoem
+          poem={poem}
+          isCompleted={isCompleted}
+          cheatIndexes={cheatIndexes}
+          truncatedStructuredPoem={truncatedStructuredPoem}
+          revealNextWord={revealNextWord}
+        ></TruncatedPoem>
+      </div>
     </div>
   );
 };
@@ -432,10 +448,7 @@ const TruncatedPoem = ({
   });
   return (
     <div className={`maskedPoem ${isCompleted ? "completed" : ""}`}>
-      <div className="poemTitle">
-        <h2>{poem.title}</h2>
-        <p>{poem.author}</p>
-      </div>
+      <PoemTitle poem={poem} />
       {lines}
     </div>
   );
@@ -486,11 +499,18 @@ const MaskedPoem = ({
   });
   return (
     <div className={`maskedPoem ${isCompleted ? "completed" : ""}`}>
-      <div className="poemTitle">
-        <h2>{poem.title}</h2>
-        <p>{poem.author}</p>
-      </div>
+      <PoemTitle poem={poem} />
       {lines}
+    </div>
+  );
+};
+
+const PoemTitle = ({ poem }: { poem: Poem }) => {
+  return (
+    <div className="poemTitle">
+      <h2>
+        {poem.title} <span> by </span> {poem.author}
+      </h2>
     </div>
   );
 };

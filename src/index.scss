@@ -1,0 +1,103 @@
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+a {
+  color: black;
+}
+
+a:visited {
+  color: black;
+}
+
+.mainBody {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100vh;
+}
+
+header {
+  margin: 0.5em auto;
+  h1 {
+    font-style: italic;
+    text-decoration: underline;
+    color: black;
+    text-align: center;
+  }
+}
+
+.addPoem {
+  width: 100%;
+  padding: 0 2em;
+  .poemInput {
+    height: 400px;
+    width: 100%;
+  }
+}
+
+.learnPoem {
+  flex: 1;
+  /* display: flex; */
+  /* flex-direction: column; */
+  .guesses {
+    width: 100%;
+    padding: 0 2em;
+    margin: 0 auto 0.5em;
+    .wordGuess {
+      font-size: 2em;
+      margin: 0 auto;
+      width: 100%;
+    }
+  }
+  .poem {
+    width: 100%;
+    padding: 0 2em;
+    font-size: 0.8em;
+    overflow-y: scroll;
+    height: 450px;
+    .poemTitle {
+      h2 {
+        font-size: 1em;
+        margin-bottom: 0.2em;
+        margin-top: 0em;
+      }
+      span {
+        font-style: italic;
+      }
+    }
+  }
+}
+
+
+.maskedPoem.completed {
+  color: green;
+}
+
+.maskedWord {
+  cursor: pointer;
+  border: 1px solid white;
+}
+
+.maskedWord:hover {
+  border: 1px solid blue;
+}
+
+.shownWord.revealed {
+  color: red;
+}
+
+.maskedPoem {
+  font-size: 1.4em;
+  line-height: 1.3;
+}
