@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  MutableRefObject,
+} from "react";
 import {
   BrowserRouter,
   Routes,
@@ -336,6 +342,15 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
       registerHardScore(poemId, cheatIndexes.length);
     }
   }, [poemId, cheatIndexes, isCompleted]);
+  const lastLineRef = useRef<null | HTMLDivElement>(null);
+  useEffect(() => {
+    if (lastLineRef !== null && lastLineRef.current !== null) {
+      lastLineRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [currentIndex]);
   const [guess, setGuess] = useState("");
 
   const revealNextWord = () => {
@@ -401,6 +416,7 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
           cheatIndexes={cheatIndexes}
           truncatedStructuredPoem={truncatedStructuredPoem}
           revealNextWord={revealNextWord}
+          lastLineRef={lastLineRef}
         ></TruncatedPoem>
       </div>
     </div>
@@ -413,12 +429,14 @@ const TruncatedPoem = ({
   cheatIndexes,
   isCompleted,
   revealNextWord,
+  lastLineRef,
 }: {
   poem: Poem;
   truncatedStructuredPoem: string[][];
   cheatIndexes: number[];
   isCompleted: boolean;
   revealNextWord: () => void;
+  lastLineRef: MutableRefObject<null | HTMLDivElement>;
 }) => {
   const numberOfLines = truncatedStructuredPoem.length;
   let index = 0;
@@ -443,8 +461,13 @@ const TruncatedPoem = ({
       const maskedWord = <MaskedWord word={""} onReveal={revealNextWord} />;
       words = [...words, maskedWord];
     }
+    const ref = i === numberOfLines - 1 ? lastLineRef : null;
 
-    return <div key={i}>{intersperse(words, <span> </span>)}</div>;
+    return (
+      <div key={i} ref={ref}>
+        {intersperse(words, <span> </span>)}
+      </div>
+    );
   });
   return (
     <div className={`maskedPoem ${isCompleted ? "completed" : ""}`}>
