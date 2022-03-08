@@ -59,6 +59,7 @@ const ByRote = () => {
         <Route path="/learn/:poemId/easy" element={<PlayPoemWrapper />} />
         <Route path="/learn/:poemId/hard" element={<PlayPoemHardWrapper />} />
       </Routes>
+      <footer></footer>
     </div>
   );
 };
@@ -91,7 +92,7 @@ const List = () => {
   });
 
   return (
-    <div>
+    <div className="poemList">
       <ul>
         {poemLinks}
         <li>
@@ -250,9 +251,11 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
     }
   }
   return (
-    <div className="learnPoem">
+    <>
       <div className="guesses">
         <input
+          tabIndex={-1}
+          autoFocus
           className="wordGuess"
           value={guess}
           onChange={(e) => changeGuess(e.target.value)}
@@ -268,7 +271,7 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
               reset();
             }}
           >
-            Reset
+            Start again
           </a>
         </p>
       </div>
@@ -282,7 +285,7 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
           revealWord={revealWord}
         ></MaskedPoem>
       </div>
-    </div>
+    </>
   );
 };
 
@@ -405,7 +408,7 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
               reset();
             }}
           >
-            Reset
+            Start again
           </a>
         </p>
       </div>
