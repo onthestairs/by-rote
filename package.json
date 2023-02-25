@@ -18,7 +18,8 @@
     "react-scripts": "^5.0.0",
     "sass": "^1.49.9",
     "serve": "^13.0.2",
-    "typescript": "^3.7.7"
+    "typescript": "^3.7.7",
+    "use-debounce": "^9.0.3"
   },
   "scripts": {
     "start": "react-scripts start",

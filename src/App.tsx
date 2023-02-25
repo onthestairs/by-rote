@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useRef,
   MutableRefObject,
+  useCallback,
 } from "react";
 import {
   BrowserRouter,
@@ -13,6 +14,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { Link } from "react-router-dom";
+import { useDebounce } from "use-debounce";
 import {
   getPoemById,
   addPoemToStore,
@@ -202,11 +204,14 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
   }, [poemId, revealedWords, isCompleted]);
   const [guess, setGuess] = useState("");
 
-  const addCorrectWord = (word: string) => {
-    const newCorrectWords = new Set(correctWords);
-    newCorrectWords.add(word.toUpperCase());
-    setCorrectWords(newCorrectWords);
-  };
+  const addCorrectWord = useCallback(
+    (word: string) => {
+      const newCorrectWords = new Set(correctWords);
+      newCorrectWords.add(word.toUpperCase());
+      setCorrectWords(newCorrectWords);
+    },
+    [correctWords, setCorrectWords]
+  );
 
   const addRevealedWord = (word: string) => {
     const newRevealedWords = new Set(revealedWords);
@@ -214,19 +219,37 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
     setRevealedWords(newRevealedWords);
   };
 
+  // Only check the guess after 350ms without any typing.
+  // This prevents the user typing "and", the correct guess for "a" being triggered immediatly,
+  // and the user being left with "nd" in the guess box.
+  const [debouncedGuess] = useDebounce(guess, 350);
   const changeGuess = (guess: string) => {
-    const upperGuess = guess.toUpperCase();
-    if (
-      wordsInPoem.has(upperGuess) &&
-      !correctWords.has(upperGuess) &&
-      !revealedWords.has(upperGuess)
-    ) {
-      addCorrectWord(upperGuess);
-      setGuess("");
-    } else {
-      setGuess(guess);
+    setGuess(guess);
+    // If the user has pressed space, that means they have finished the word: skip debouncing
+    // and check the guess straight away
+    if (guess.slice(-1) === " ") {
+      checkGuess(guess.trim());
     }
   };
+
+  const checkGuess = useCallback(
+    (guessToCheck: string) => {
+      const upperGuess = guessToCheck.toUpperCase();
+      if (
+        wordsInPoem.has(upperGuess) &&
+        !correctWords.has(upperGuess) &&
+        !revealedWords.has(upperGuess)
+      ) {
+        addCorrectWord(upperGuess);
+        setGuess("");
+      }
+    },
+    [wordsInPoem, correctWords, revealedWords, addCorrectWord]
+  );
+
+  useEffect(() => {
+    checkGuess(debouncedGuess);
+  }, [debouncedGuess, checkGuess]);
 
   const revealWord = (word: string) => {
     addRevealedWord(word);
