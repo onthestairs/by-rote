@@ -296,6 +296,8 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
           >
             Start again
           </a>
+          {" | "}
+          <Link to={`/learn/${poemId}/hard`}>Hard mode</Link>
         </p>
       </div>
       <div className="poem">
@@ -433,6 +435,8 @@ const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
           >
             Start again
           </a>
+          {" | "}
+          <Link to={`/learn/${poemId}/easy`}>Easy mode</Link>
         </p>
       </div>
       <div className="poem">
