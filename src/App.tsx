@@ -121,8 +121,8 @@ const extractWords = (poem: string): Set<string> => {
   let words = splitLines(poem)
     .map((line) =>
       splitWords(line.trim()).map((word) =>
-        extractActualWord(word).toUpperCase()
-      )
+        extractActualWord(word).toUpperCase(),
+      ),
     )
     .flat();
   return new Set(words);
@@ -170,7 +170,7 @@ const PoemForm = ({ onSubmit }: { onSubmit: (poem: Poem) => void }) => {
 };
 
 const extractActualWord = (word: string) => {
-  return word.replace(/([^a-zA-Z'-]|(-$))/g, "");
+  return word.replace(/([^a-zA-ZÀ-ÿ'-]|(-$))/g, "");
 };
 
 const PlayPoemWrapper = () => {
@@ -186,7 +186,7 @@ const PlayPoemWrapper = () => {
 const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
   const structuredPoem = useMemo(
     () => makeStructuredPoem(poem.text),
-    [poem.text]
+    [poem.text],
   );
   const wordsInPoem = useMemo(() => extractWords(poem.text), [poem.text]);
   const [correctWords, setCorrectWords] = useState<Set<string>>(new Set());
@@ -210,7 +210,7 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
       newCorrectWords.add(word.toUpperCase());
       setCorrectWords(newCorrectWords);
     },
-    [correctWords, setCorrectWords]
+    [correctWords, setCorrectWords],
   );
 
   const addRevealedWord = (word: string) => {
@@ -244,7 +244,7 @@ const PlayPoem = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
         setGuess("");
       }
     },
-    [wordsInPoem, correctWords, revealedWords, addCorrectWord]
+    [wordsInPoem, correctWords, revealedWords, addCorrectWord],
   );
 
   useEffect(() => {
@@ -328,7 +328,7 @@ const isWhiteSpace = (s: string): boolean => {
 
 const splitStructuredPoem = (
   structuredPoem: string[][],
-  stopIndex: number
+  stopIndex: number,
 ): [string[][], string | null] => {
   let index = 0;
   let truncatedStructuredPoem: string[][] = [];
@@ -355,7 +355,7 @@ const splitStructuredPoem = (
 const PlayPoemHard = ({ poemId, poem }: { poemId: string; poem: Poem }) => {
   const structuredPoem = useMemo(
     () => makeStructuredPoem(poem.text),
-    [poem.text]
+    [poem.text],
   );
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [truncatedStructuredPoem, expectedWord] = useMemo(() => {
