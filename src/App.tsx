@@ -53,7 +53,7 @@ const ByRote = () => {
             <PoemForm
               onSubmit={(poem: Poem) => {
                 const poemId = addPoemToStore(poem);
-                navigate(`/learn/${poemId}`);
+                navigate(`/learn/${poemId}/easy`);
               }}
             />
           }
